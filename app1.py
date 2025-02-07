@@ -4,21 +4,25 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # Load the trained model
 with open("model.pkl", "rb") as file:
     model = pickle.load(file)
 
-# Load confusion matrix image
+# Load confusion matrix image (check if file exists)
 confusion_matrix_img = "confusion_matrix.png"
+if os.path.exists(confusion_matrix_img):
+    st.sidebar.image(confusion_matrix_img, caption="Confusion Matrix", use_column_width=True)
+else:
+    st.sidebar.warning("⚠️ Confusion matrix image not found!")
 
 # Streamlit UI
 st.title("📡 Telecom Churn Prediction App 🚀")
 st.write("Enter customer details to predict churn & explore model insights.")
 
-# --- Sidebar for Dataset Insights ---
+# --- Sidebar for Model Info ---
 st.sidebar.header("📊 Model Insights")
-st.sidebar.image(confusion_matrix_img, caption="Confusion Matrix", use_column_width=True)
 st.sidebar.write("This model is trained using a **Decision Tree Classifier**.")
 st.sidebar.write("**Accuracy:** 85% (Example, update based on model)")
 
@@ -50,15 +54,24 @@ if st.button("🔮 Predict"):
 
 # --- 🔥 Additional Visualization: Feature Importance ---
 st.subheader("📈 Feature Importance")
-feature_importance = model.feature_importances_
-features = ['Account Length', 'Voicemail Messages', 'Day Mins', 'Evening Mins', 
-            'Night Mins', 'International Mins', 'Customer Service Calls']
 
-plt.figure(figsize=(8, 4))
-sns.barplot(x=feature_importance, y=features, palette="viridis")
-plt.xlabel("Importance Score")
-plt.ylabel("Features")
-plt.title("Feature Importance in Churn Prediction")
-plt.savefig("feature_importance.png")  # Save the plot
-st.image("feature_importance.png", caption="Feature Importance", use_column_width=True)
+# Check if model has feature importance
+if hasattr(model, "feature_importances_"):
+    feature_importance = model.feature_importances_
+    features = ['Account Length', 'Voicemail Messages', 'Day Mins', 'Evening Mins', 
+                'Night Mins', 'International Mins', 'Customer Service Calls']
+
+    plt.figure(figsize=(8, 4))
+    sns.barplot(x=feature_importance, y=features, palette="viridis")
+    plt.xlabel("Importance Score")
+    plt.ylabel("Features")
+    plt.title("Feature Importance in Churn Prediction")
+    
+    feature_importance_img = "feature_importance.png"
+    plt.savefig(feature_importance_img)
+    plt.close()  # Prevents memory leaks
+    
+    st.image(feature_importance_img, caption="Feature Importance", use_column_width=True)
+else:
+    st.warning("⚠️ Feature importance not available for this model!")
 
